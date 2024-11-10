@@ -19,8 +19,11 @@ docker run -it -v /c/FxM/Dev/SQL:/mnt/sql myansible
 docker run --name my_ansible_container -v /c/FxM/Dev/SQL:/mnt/sql -d ansible/ansible:ubuntu1404
 
 
-Stop the container: 
+ Stop the container: 
 docker stop myansible
+
+ Running Docker Compose
+docker-compose up -d
 
 sqlcmd -S LAPTOP-JIH94VS9\SQLEXPRESS -E -Q "SELECT @@VERSION"
 

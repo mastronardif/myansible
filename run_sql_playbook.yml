@@ -5,7 +5,9 @@
   tasks:
     - name: Execute a simple SQL command
       ansible.builtin.shell: |
-        sqlcmd -S 192.168.1.184,1433 -U sa -P admin -Q "SELECT TOP 10 * FROM AdventureWorksDW.dbo.DatabaseLog"
+        sqlcmd -S 192.168.1.184,1433 -U sa -P admin -Q "SELECT @@VERSION"
+        # Uncomment the next line to query from AdventureWorksDW
+        # sqlcmd -S 192.168.1.184,1433 -U sa -P admin -Q "SELECT TOP 10 * FROM AdventureWorksDW.dbo.DatabaseLog"
       register: sql_output
 
     - name: Show SQL output
