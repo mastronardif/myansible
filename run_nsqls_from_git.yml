@@ -1,0 +1,47 @@
+---
+- name: Get SQL files from Git and execute on SQL Server
+  hosts: localhost
+  connection: local
+  tasks:
+    - name: Install Git (if not already installed)
+      ansible.builtin.apt:
+        name: git
+        state: present
+      become: yes
+
+    - name: Clone the Git repository
+      ansible.builtin.git:
+        repo: 'https://github.com/mastronardif/myansible.git'
+        dest: '/tmp/sql-scripts'
+        version: 'main'  # Replace with the branch you need (e.g., main or master)
+      become: yes
+
+    - name: Find all SQL files in the /tmp/sql-scripts/sql/ directory
+      ansible.builtin.find:
+        paths: /tmp/sql-scripts/sql/
+        patterns: "sql*.sql"
+      register: sql_files
+
+    - name: Set the number of SQL files
+      set_fact:
+        num_of_files: "{{ sql_files.files | length }}"
+
+    - name: Generate list of SQL file names (sql1.sql, sql2.sql, ...)
+      set_fact:
+        sql_file_names: >-
+          {{
+            range(1, num_of_files + 1) | map('regex_replace', '^', 'sql') | map('regex_replace', '$', '.sql')
+          }}
+
+    - name: Execute each SQL file in order
+      ansible.builtin.shell: |
+        echo "{{ lookup('file', '/tmp/sql-scripts/sql/' + item) }}" | sqlcmd -S 192.168.1.184,1433 -U sa -P admin -d master
+      loop: "{{ sql_file_names }}"
+      loop_control:
+        label: "{{ item }}"
+      register: sql_output
+      become: yes
+
+    - name: Show SQL outputs
+      debug:
+        var: sql_output.results

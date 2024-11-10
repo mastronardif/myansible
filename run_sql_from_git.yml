@@ -21,9 +21,14 @@
         src: '/tmp/sql-scripts/sql/test.sql'  # Replace with the actual SQL file name
       register: sql_file_content
 
-    - name: Execute SQL script on SQL Server
+    - name: Execute SQL script on SQL Server and capture output
       ansible.builtin.shell: |
         echo "{{ sql_file_content.content | b64decode }}" | sqlcmd -S 192.168.1.184,1433 -U sa -P admin -d master
       environment:
         LANG: en_US.UTF-8
+      register: sql_output
       become: yes
+
+    - name: Show SQL output
+      debug:
+        var: sql_output.stdout
