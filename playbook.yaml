@@ -1,0 +1,48 @@
+---
+- name: Deploy SQL scripts from Git to SQL Server
+  hosts: windows_sql_server
+  gather_facts: no
+  vars:
+    git_repo_url: "https://your-remote-url.git"  # Git repository URL
+    git_repo_path: "C:\\path\\to\\sql\\repo"     # Path where the Git repo will be cloned
+    sql_server_name: "SQLEXPRESS"       # SQL Server instance name
+    sql_database: "AdventureWorksDW"            # Target database name
+    sql_user: "your_sql_username"                 # SQL Server username
+    sql_password: "your_sql_password"             # SQL Server password
+    sql_file_name: "your_sql_script.sql"          # SQL file to execute
+
+  tasks:
+    - name: Ensure Git repository directory exists
+      ansible.builtin.win_file:
+        path: "{{ git_repo_path }}"
+        state: directory
+
+    - name: Clone the Git repository if not already cloned
+      ansible.builtin.win_command:
+        cmd: git clone {{ git_repo_url }} {{ git_repo_path }}
+      args:
+        creates: "{{ git_repo_path }}\\.git"  # Only runs if the repo hasn't been cloned yet
+      register: git_clone_result
+
+    - name: Pull the latest changes if repo is already cloned
+      ansible.builtin.win_command:
+        cmd: git pull
+      args:
+        chdir: "{{ git_repo_path }}"
+      when: git_clone_result is not defined or git_clone_result is failed
+
+    - name: Run SQL script on SQL Server
+      ansible.builtin.win_shell: |
+        sqlcmd -S {{ sql_server_name }} -d {{ sql_database }} -U {{ sql_user }} -P {{ sql_password }} -i "{{ git_repo_path }}\\{{ sql_file_name }}"
+      environment:
+        PATH: "{{ ansible_env.PATH }}"  # Ensures sqlcmd can be found in PATH
+      register: sqlcmd_result
+
+    - name: Display SQL script output
+      ansible.builtin.debug:
+        msg: "{{ sqlcmd_result.stdout }}"
+
+    - name: Check for errors in SQL script execution
+      ansible.builtin.fail:
+        msg: "SQL script execution failed: {{ sqlcmd_result.stderr }}"
+      when: sqlcmd_result.rc != 0

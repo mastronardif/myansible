@@ -1,0 +1,25 @@
+- name: Gather Windows system information
+  hosts: windows
+  tasks:
+    - name: Collect system facts
+      ansible.builtin.setup:
+        gather_subset:
+          - network
+          - hardware
+          - virtual
+          
+    - name: Show hostname
+      debug:
+        msg: "Hostname: {{ ansible_hostname }}"
+
+    - name: Show IP address
+      debug:
+        msg: "IP Address: {{ ansible_default_ipv4.address }}"
+
+    - name: Show OS version
+      debug:
+        msg: "OS Version: {{ ansible_distribution_version }}"
+
+    - name: Show OS name
+      debug:
+        msg: "OS Name: {{ ansible_distribution }}"

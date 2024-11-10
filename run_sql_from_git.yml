@@ -1,0 +1,29 @@
+---
+- name: Get SQL from Git and execute on SQL Server
+  hosts: localhost
+  tasks:
+    
+    - name: Install Git (if not already installed)
+      ansible.builtin.apt:
+        name: git
+        state: present
+      become: yes
+
+    - name: Clone the Git repository
+      ansible.builtin.git:
+        repo: 'https://your-git-repository-url.git'
+        dest: '/tmp/sql-scripts'
+        version: 'main'  # Replace with the branch you need (e.g., main or master)
+      become: yes
+
+    - name: Read the SQL file from Git repository
+      ansible.builtin.slurp:
+        src: '/tmp/sql-scripts/your_sql_file.sql'  # Replace with your SQL file path in the repo
+      register: sql_file_content
+
+    - name: Execute SQL script on SQL Server
+      ansible.builtin.shell: |
+        echo "{{ sql_file_content.content | b64decode }}" | sqlcmd -S LAPTOP-JIH94VS9\SQLEXPRESS -U sa -P admin -d master -Q "SET NOCOUNT ON; {{ sql_file_content.content | b64decode }}"
+      environment:
+        LANG: en_US.UTF-8
+      become: yes

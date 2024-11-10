@@ -1,0 +1,39 @@
+
+
+Rebuild the Docker Image:
+docker build -t your_image_name .
+
+docker run -it myansible python --version   # Should show Python 3.x.x
+docker run -it myansible ansible --version  # Should show Ansible version
+docker run -it myansible pip3 show pywinrm  # Should show pywinrm version
+
+
+ansible-playbook -i hosts.ini gather_system_info.yml
+
+Command to Run the Container with a Name:
+
+Run the container with the volume mount: 
+docker run --name myansible -it ansible/ansible:ubuntu1404
+
+docker run -it -v /c/FxM/Dev/SQL:/mnt/sql myansible
+docker run --name my_ansible_container -v /c/FxM/Dev/SQL:/mnt/sql -d ansible/ansible:ubuntu1404
+
+
+Stop the container: 
+docker stop myansible
+
+sqlcmd -S LAPTOP-JIH94VS9\SQLEXPRESS -E -Q "SELECT @@VERSION"
+
+sqlcmd -S 192.168.1.184\SQLEXPRESS -E -Q "SELECT @@VERSION"
+
+
+LAPTOP-JIH94VS9\SQLEXPRESS
+LAPTOP-JIH94VS9\SQLEXPRESS
+SQLEXPRESS
+sqlcmd -S 192.168.1.184,1433 -U sa -P admin -Q "SELECT @@VERSION"
+sqlcmd -S LAPTOP-JIH94VS9\SQLEXPRESS -E -Q "SELECT @@VERSION"
+sqlcmd -S LAPTOP-JIH94VS9\SQLEXPRESS -U sa -P admin -Q "SELECT @@VERSION"
+
+
+
+

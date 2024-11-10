@@ -1,0 +1,15 @@
+version: '3.8'
+
+services:
+  ansible:
+    image: my_ansible_image   # The name of your built Ansible image
+    container_name: my_ansible_container   # Name for the running container
+    volumes:
+      - /c/FxM/Dev/SQL:/mnt/sql   # Mount the Windows directory to /mnt/sql inside the container
+    working_dir: /mnt/sql   # Set the working directory inside the container (optional)
+    stdin_open: true  # Allow interactive input (useful if running commands interactively)
+    tty: true  # Allocate a pseudo-TTY (useful for interactive containers)
+    command: /bin/bash   # Set the container to run bash (optional, can be used for interactive mode)
+# networks:
+#   my_custom_network:
+#     external: true

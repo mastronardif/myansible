@@ -1,0 +1,13 @@
+---
+- name: Run a SQL command on SQL Server
+  hosts: localhost
+  connection: local
+  tasks:
+    - name: Execute a simple SQL command
+      ansible.builtin.shell: |
+        sqlcmd -S 192.168.1.184,1433 -U sa -P admin -Q "SELECT TOP 10 * FROM AdventureWorksDW.dbo.DatabaseLog"
+      register: sql_output
+
+    - name: Show SQL output
+      debug:
+        var: sql_output.stdout
