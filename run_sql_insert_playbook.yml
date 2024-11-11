@@ -1,0 +1,33 @@
+---
+- name: Insert rows from CSV file into SQL Server
+  hosts: localhost
+  connection: local
+  tasks:
+    - name: Read the CSV file
+      ansible.builtin.slurp:
+        src: /mnt/sql/mnts.txt.csv
+      register: csv_data
+
+    - name: Parse CSV content and skip header row
+      set_fact:
+        mtn_list: "{{ (csv_data.content | b64decode).split('\n')[1:] | select('match', '^\\d+') | list }}"
+
+    - name: Show MTNs to be inserted (skipped header)
+      debug:
+        msg: "{{ mtn_list }}"
+
+    - name: Insert MTNs into SQL Server
+      ansible.builtin.shell: |
+        sqlcmd -S 192.168.1.184,1433 -U sa -P admin -Q "
+          USE AdventureWorksDW;
+          INSERT INTO temp_mtn_table (mtn)
+          VALUES ('{{ item }}');
+        "
+      loop: "{{ mtn_list }}"
+      loop_control:
+        label: "{{ item }}"
+      register: insert_results
+
+    - name: Show insertion results
+      debug:
+        var: insert_results
