@@ -1,4 +1,3 @@
----
 - name: Get SQL files from Git and execute on SQL Server
   hosts: localhost
   connection: local
@@ -26,16 +25,59 @@
       set_fact:
         num_of_files: "{{ sql_files.files | length }}"
 
+    - name: Ensure num_of_files is an integer
+      set_fact:
+        num_of_files: "{{ num_of_files | int }}"
+
     - name: Generate list of SQL file names (sql1.sql, sql2.sql, ...)
       set_fact:
-        sql_file_names: >-
-          {{
-            range(1, num_of_files + 1) | map('regex_replace', '^', 'sql') | map('regex_replace', '$', '.sql')
-          }}
+        sql_file_names: []
+
+    - name: Hardcoded list of SQL file names (sql1.sql, sql2.sql, sql3.sql)
+      set_fact:
+        sql_file_names:
+          - "sql1.sql"
+          - "sql2.sql"
+          - "sql3.sql"
+
+    - name: Generate list of SQL file names (sql1.sql, sql2.sql, ...)
+      set_fact:
+        msgs: []
+
+    # - name: Set the number of SQL files
+    #   set_fact:
+    #     num_of_files: "{{ sql_files.files | length }}"
+
+
+    - name: Generate list of strings 1-num_of_files
+      set_fact:
+        # msgs: "{{ range(1, num_of_files) | map('string') | map('regex_replace', '^', 'sql') | map('regex_replace', '$', '.sql') | list }}"
+        msgs: "{{ range(1, 12 + 1) | map('string') | map('regex_replace', '^', 'sql') | map('regex_replace', '$', '.sql') | list }}"
+
+    - name: Truncate msgs array to the value of truncate_to
+      set_fact:
+        msgs: "{{ msgs[:num_of_files | int] }}"
+
+      # - name: Print msgs file names
+      # debug:
+      #   var: sql_file_names
+
+    # - name: Generate list of SQL file names (sql1.sql, sql2.sql, ...)
+    #   set_fact:
+    #     sql_file_names: "{{ ['sql' + {{ item|type_debug }} + '.sql' for item in range(1, num_of_files + 1)] }}"
+    # This will generate a list of sql1.sql, sql2.sql, ..., up to num_of_files
+    - name: Print the generated list of SQL file names
+      debug:
+        msg: "{{ msgs }}"
+
+
+    - name: Print SQL file names
+      debug:
+        var: sql_file_names
 
     - name: Execute each SQL file in order
       ansible.builtin.shell: |
-        echo "{{ lookup('file', '/tmp/sql-scripts/sql/' + item) }}" | sqlcmd -S 192.168.1.184,1433 -U sa -P admin -d master
+        sqlcmd -S 192.168.1.184,1433 -U sa -P admin -d master -i "/tmp/sql-scripts/sql/{{ item }}"
       loop: "{{ sql_file_names }}"
       loop_control:
         label: "{{ item }}"
