@@ -1,0 +1,35 @@
+---
+- name: Insert MTN rows from CSV directly into SQL Server without file reference
+  hosts: localhost
+  connection: local
+  vars_files:
+    - vars.yml  # External file with SQL Server connection details
+
+  tasks:
+    - name: Read the CSV file
+      ansible.builtin.slurp:
+        src: /mnt/sql/mnts.txt.csv
+      register: csv_data
+
+    - name: Parse CSV content and skip header row
+      set_fact:
+        mtn_list: "{{ (csv_data.content | b64decode).splitlines()[1:] | select('match', '^\\d+') | list }}"
+
+    - name: Show MTNs to be inserted (skipped header)
+      debug:
+        msg: "{{ mtn_list }}"
+
+    - name: Insert MTNs into SQL Server
+      ansible.builtin.shell: |
+        sqlcmd -S {{ server }} -U {{ user }} -P {{ password }} -d {{ database }} -Q "
+          INSERT INTO temp_mtn_table (mtn)
+          VALUES ('{{ item }}');
+        "
+      loop: "{{ mtn_list }}"
+      loop_control:
+        label: "{{ item }}"
+      register: insert_results
+
+    - name: Show insertion results
+      debug:
+        var: insert_results

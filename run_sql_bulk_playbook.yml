@@ -1,0 +1,16 @@
+---
+- name: Execute BULK INSERT for MTNs from SQL file
+  hosts: localhost
+  connection: local
+  vars_files:
+    - vars.yml  # Include the external variables file with SQL connection details
+
+  tasks:
+    - name: Run BULK INSERT SQL script on SQL Server
+      ansible.builtin.shell: |
+        sqlcmd -S {{ server }} -U {{ user }} -P {{ password }} -d {{ database }} -i "C:\FxM\Dev\myansible\SQL\other\mtn000.sql"
+      register: bulk_insert_result
+
+    - name: Show BULK INSERT execution results
+      debug:
+        var: bulk_insert_result

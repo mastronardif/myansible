@@ -4,7 +4,7 @@ CREATE  TABLE #temp_mtn_table (
 );
 
 BULK INSERT #temp_mtn_table
-FROM 'C:\FxM\Dev\SQL\mnts.txt.csv'
+FROM 'C:\FxM\Dev\myansible\SQL\mnts.txt.csv'
 WITH (
     FIELDTERMINATOR = ',',
     ROWTERMINATOR = '\n',
