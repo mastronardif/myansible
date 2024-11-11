@@ -2,6 +2,9 @@
 - name: Insert rows from CSV file into SQL Server
   hosts: localhost
   connection: local
+  vars_files:
+    - vars.yml  # Include the external variables file
+
   tasks:
     - name: Read the CSV file
       ansible.builtin.slurp:
@@ -18,8 +21,7 @@
 
     - name: Insert MTNs into SQL Server
       ansible.builtin.shell: |
-        sqlcmd -S 192.168.1.184,1433 -U sa -P admin -Q "
-          USE AdventureWorksDW;
+        sqlcmd -S {{ server }} -U {{ user }} -P {{ password }} -d {{ database }} -Q "
           INSERT INTO temp_mtn_table (mtn)
           VALUES ('{{ item }}');
         "

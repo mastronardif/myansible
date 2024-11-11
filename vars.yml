@@ -1,0 +1,5 @@
+# vars.yml
+server: "192.168.1.184,1433"
+user: "sa"
+password: "admin"
+database: "AdventureWorksDW"
