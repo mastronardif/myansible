@@ -7,6 +7,10 @@ docker run -it myansible python --version   # Should show Python 3.x.x
 docker run -it myansible ansible --version  # Should show Ansible version
 docker run -it myansible pip3 show pywinrm  # Should show pywinrm version
 
+To connect to a running Docker container from the host’s terminal (bash):
+docker exec -it <container_name_or_id> /bin/bash
+docker exec -it my_ansible_container /bin/bash
+
 
 ansible-playbook -i hosts.ini gather_system_info.yml
 
